@@ -2,3 +2,6 @@ app/a.out
 *.zip
 build
 debug
+cmake-build-debug
+.idea
+.vscode
