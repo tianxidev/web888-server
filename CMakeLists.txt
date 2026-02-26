@@ -9,6 +9,7 @@ find_program(MINIFY_COMMAND NAMES minify)
 
 option(ZYNQ "Build for Zynq7000 serial based WebSDR" ON)
 option(ENABLE_HDFL "Enable HFDL" ON)
+option(FORCE_EMULATOR "Force emulator build" OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
@@ -33,20 +34,26 @@ FILE(GLOB PLATFORM_SRCS
 )
 
 # Detect if host system is ARM
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-    set(PLATFORM_FLAGS -march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard  -mvectorize-with-neon-quad)
-    set(PLATFORM_DEFINES 
-            # for CMSIS
-        ARM_MATH_NEON
-        ARM_MATH_LOOPUNROLL
-
-        # for SIMD
-        __ARM_NEON
-    )
-else()
+if(FORCE_EMULATOR)
     set(PLATFORM_FLAGS -ffast-math)
     set(ENABLE_HDFL OFF)
-    SET(EMULATOR ON)
+    set(EMULATOR ON)
+else()
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        set(PLATFORM_FLAGS -march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard  -mvectorize-with-neon-quad)
+        set(PLATFORM_DEFINES 
+                # for CMSIS
+            ARM_MATH_NEON
+            ARM_MATH_LOOPUNROLL
+
+            # for SIMD
+            __ARM_NEON
+        )
+    else()
+        set(PLATFORM_FLAGS -ffast-math)
+        set(ENABLE_HDFL OFF)
+        SET(EMULATOR ON)
+    endif()
 endif()
 
 find_package(PkgConfig REQUIRED)
